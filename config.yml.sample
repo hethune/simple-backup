@@ -1,0 +1,27 @@
+base_config:
+  dry_run: # whether upload to cloud
+  tmp_folder: '/tmp' # tmp folder to hold db dump files
+  passphrase: 'verysecure' # passphrase to encrypt dumped files
+  log_file: 'backup.log' 
+
+qiniu_config: # it could be s3_config or other cloud services
+  access_key: 
+  secret_key: 
+  bucket_name: 
+
+sql_config:
+  - host: localhost
+    database: 
+    username: 
+    password: ''
+    interval: # minutes to do back up
+    prefix: test-db-backup # dumped file prefix
+    suffix: sql.gzip.encrypted # dumped file suffix
+    expired: 2 # days to store the backed file
+
+redis_config:
+  rdb_path: /usr/local/var/db/redis/dump.rdb # path to rdb file
+  interval: # minutes to do back up
+  prefix: test-redis-backup
+  suffix: rdb.gzip.encrypted
+  expired: 1
