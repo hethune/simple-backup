@@ -18,7 +18,7 @@ import time
 
 import schedule
 
-from jobs import SampleJob, SqlBackupJob, RedisBackupJob
+from jobs import Heartbeat, SqlBackupJob, RedisBackupJob
 from config import BaseConfig, S3Config, SQLConfig, RedisConfig
 from uploader import QiniuUploader
 
@@ -32,9 +32,13 @@ def parse_config(config):
   return base_config, sql_config, redis_config, qiniu_config
 
 def run(config):
+  jobs = []
+  # heartbeat job
+  heartbeat = Heartbeat(1)
+  jobs.append({"job": heartbeat, "interval": 1})
+
   base_config, sql_config, redis_config, qiniu_config = parse_config(config)
   qiniu_uploader = QiniuUploader(qiniu_config)
-  jobs = []
   if sql_config:
     for config in sql_config:
       sql_backup_job = SqlBackupJob(base_config, config, qiniu_uploader)

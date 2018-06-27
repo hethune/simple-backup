@@ -57,9 +57,9 @@ class BackupJob(object):
 
 
 
-class SampleJob(BackupJob):
+class Heartbeat(BackupJob):
   """
-  Sample job to get started
+  Heartbeat
   """
   def __init__(self, n):
     self.counter = 0
@@ -67,7 +67,7 @@ class SampleJob(BackupJob):
 
   def run(self):
     self.counter += 1
-    print("jobs for every {} seconds. Total time is {}".format(self.internal, self.counter))
+    logger.info("Heartbeat for every {} seconds. Total time is {}".format(self.internal, self.counter))
 
 class SqlBackupJob(BackupJob):
   """

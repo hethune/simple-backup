@@ -44,6 +44,7 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Simple Backup')
   parser.add_argument('-d', "--daemon", help="Daemon mode", action="store_true")
   args = parser.parse_args()
+  logger.info("############### starting simple backup services #######################")
   if args.daemon:
     daemon.start()
   else:
