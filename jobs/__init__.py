@@ -92,15 +92,15 @@ class SqlBackupJob(BackupJob):
     try:
       # dump sql to file
       # mysqldump -h xxx -d xxx -u root | gzip --best | openssl des -salt -k xxxxxx
-      sql_dump_command = "mysqldump -h{} -d{} -u{} -p{}".format(
+      sql_dump_command = "mysqldump -h{} -u{} -p{} {}".format(
           self.sql_config.host, 
-          self.sql_config.database,
           self.sql_config.username,
-          self.sql_config.password
-        ) if self.sql_config.password else "mysqldump -h {} -d {} -u {}".format(
+          self.sql_config.password,
+          self.sql_config.database
+        ) if self.sql_config.password else "mysqldump -h {} -u {}".format(
           self.sql_config.host, 
-          self.sql_config.database,
           self.sql_config.username,
+          self.sql_config.database
         )
 
       command = "{} | gzip --best | openssl des -salt -k {} > {}".format(
