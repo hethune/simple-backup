@@ -29,7 +29,19 @@ formatter = logging.Formatter(
         '%(asctime)s %(levelname)-8s %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-logger.setLevel(logging.DEBUG)
+
+log_level_config = config["base_config"]["log_level"]
+assert log_level_config in ['DEBUG', 'INFO', 'WARNING', 'ERROR']
+if log_level_config == 'DEBUG':
+  log_level = logging.DEBUG
+elif log_level_config == 'INFO':
+  log_level = logging.INFO
+elif log_level_config == 'WARNING':
+  log_level = logging.WARNING
+elif log_level_config == 'ERROR':
+  log_level = logging.ERROR  
+
+logger.setLevel(log_level)
 
 class StreamToLogger(object):
    """

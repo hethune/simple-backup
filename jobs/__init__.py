@@ -109,7 +109,7 @@ class SqlBackupJob(BackupJob):
         tmp_file_name_with_path
       )
 
-      logger.info("running {}".format(command))
+      logger.debug("running {}".format(command))
       c = delegator.run(command)
 
       logger.warning("dumped back up file {}".format(tmp_file_name))
@@ -149,7 +149,7 @@ class RedisBackupJob(BackupJob):
 
     try:
       command = "cp {} {}".format(self.redis_config.rdb_path, tmp_file_name_with_path)
-      logger.info("running {}".format(command))
+      logger.debug("running {}".format(command))
       c = delegator.run(command)
       if c.return_code != 0:
         raise RuntimeError(c.std_err)

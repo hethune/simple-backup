@@ -3,6 +3,7 @@ base_config:
   tmp_folder: '/tmp' # tmp folder to hold db dump files
   passphrase: 'verysecure' # passphrase to encrypt dumped files
   log_file: 'backup.log' 
+  log_level: # DEBUG, INFO, WARNING, ERROR
 
 qiniu_config: # it could be s3_config or other cloud services
   access_key: 
