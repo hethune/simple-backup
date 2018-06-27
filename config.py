@@ -45,6 +45,7 @@ class SQLConfig(object):
     self.password = config["password"]
     # back up interval: Every n minutes
     self.interval = config["interval"]
+    self.interval_unit = config["interval_unit"]
     # s3 file prefix and suffix
     self.prefix = config["prefix"]
     self.suffix = config["suffix"]
@@ -61,6 +62,7 @@ class RedisConfig(object):
     self.rdb_path = config["rdb_path"] 
     # back up interval: Every n minutes
     self.interval = config["interval"]
+    self.interval_unit = config["interval_unit"]
     # s3 file prefix
     self.prefix = config["prefix"]
     self.suffix = config["suffix"]

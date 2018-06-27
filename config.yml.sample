@@ -15,6 +15,7 @@ sql_config:
     username: 
     password: ''
     interval: # minutes to do back up
+    interval_unit: # second or minute or hour
     prefix: test-db-backup # dumped file prefix
     suffix: sql.gzip.encrypted # dumped file suffix
     expired: 2 # days to store the backed file
@@ -22,6 +23,7 @@ sql_config:
 redis_config:
   rdb_path: /usr/local/var/db/redis/dump.rdb # path to rdb file
   interval: # minutes to do back up
+  interval_unit: # second or minute or hour
   prefix: test-redis-backup
   suffix: rdb.gzip.encrypted
   expired: 1
