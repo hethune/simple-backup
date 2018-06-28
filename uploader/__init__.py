@@ -12,6 +12,7 @@
 #                 ||     ||
 
 from main import logger
+from qiniu import Auth, put_file, BucketManager, etag
 
 class Uploader(object):
   def __init__(self):
@@ -32,7 +33,6 @@ class QiniuUploader(Uploader):
     file: file path
     expire_days: lifetime for the file
     """
-    from qiniu import Auth, put_file, BucketManager, etag
     bucket_name = self.bucket_name
     q = Auth(self.access_key, self.secret_key)
 
