@@ -1,6 +1,6 @@
 #!/bin/bash
 MONGODB_HOST='127.0.0.1:27017'
-S3_BUCKET='s3/buckets/wehome-airbnb-backup'
+S3_BUCKET='wehome-airbnb-backup'
 
 # Get the directory the script is being run from
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
