@@ -3,3 +3,4 @@ delegator.py
 qiniu
 pyyaml
 daemonize
+boto3

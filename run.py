@@ -18,10 +18,9 @@ import time
 
 import schedule
 
-from jobs import Heartbeat, SqlBackupJob, RedisBackupJob
-from config import BaseConfig, S3Config, SQLConfig, RedisConfig
-from uploader import QiniuUploader
-
+from jobs import Heartbeat, SqlBackupJob, RedisBackupJob, MongoBackupJob
+from config import BaseConfig, S3Config, SQLConfig, RedisConfig, MongoConfig
+from uploader import QiniuUploader, S3Uploader
 
 
 def parse_config(config):
@@ -29,7 +28,8 @@ def parse_config(config):
   qiniu_config = S3Config(config["qiniu_config"])
   sql_config = [ SQLConfig(x) for x in config["sql_config"] ] if "sql_config" in config else None
   redis_config = RedisConfig(config["redis_config"]) if "redis_config" in config else None
-  return base_config, sql_config, redis_config, qiniu_config
+  mongo_config =[ MongoConfig(x) for x in config['mongo_config']] if "mongo_config" in config else None
+  return base_config, sql_config, redis_config, qiniu_config, mongo_config
 
 def run(config):
   jobs = []
@@ -37,8 +37,8 @@ def run(config):
   heartbeat = Heartbeat(1)
   jobs.append({"job": heartbeat, "interval": 1, "interval_unit": "minute"})
 
-  base_config, sql_config, redis_config, qiniu_config = parse_config(config)
-  qiniu_uploader = QiniuUploader(qiniu_config)
+  base_config, sql_config, redis_config, qiniu_config, mongo_config = parse_config(config)
+  qiniu_uploader = QiniuUploader(qiniu_config) if not qiniu_config.is_s3 else S3Uploader(qiniu_config)
   if sql_config:
     for config in sql_config:
       sql_backup_job = SqlBackupJob(base_config, config, qiniu_uploader)
@@ -47,12 +47,21 @@ def run(config):
           "interval": config.interval,
           "interval_unit": config.interval_unit
         })
-  redis_backup_job = RedisBackupJob(base_config, redis_config, qiniu_uploader)
-  jobs.append({
-      "job":redis_backup_job, 
-      "interval": redis_config.interval,
-      "interval_unit": redis_config.interval_unit
-    })
+  if redis_config:
+    redis_backup_job = RedisBackupJob(base_config, redis_config, qiniu_uploader)
+    jobs.append({
+        "job":redis_backup_job, 
+        "interval": redis_config.interval,
+        "interval_unit": redis_config.interval_unit
+      })
+  if mongo_config:
+    for config in mongo_config:
+      mongo_backup_job = MongoBackupJob(base_config,config, qiniu_uploader)
+      jobs.append({
+          "job":mongo_backup_job, 
+          "interval": config.interval,
+          "interval_unit": config.interval_unit
+        })
 
   for job in jobs:
     interval = job["interval"]

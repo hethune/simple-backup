@@ -9,6 +9,7 @@ qiniu_config: # it could be s3_config or other cloud services
   access_key: 
   secret_key: 
   bucket_name: 
+  is_s3: false
 
 sql_config:
   - host: localhost
@@ -28,3 +29,15 @@ redis_config:
   prefix: test-redis-backup
   suffix: rdb.gzip.encrypted
   expired: 1
+
+mongo_config:
+  - host: localhost
+    database: 
+    username: 
+    password: ''
+    interval: # minutes to do back up
+    interval_unit: # second or minute or hour
+    prefix: test-mongo-backup # dumped file prefix
+    suffix: sql.gzip.encrypted # dumped file suffix
+    ds_start: # start date to backup  2018-01-02
+    ds_end:  # end date to backup  2018-01-09
