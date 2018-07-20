@@ -13,6 +13,7 @@
 
 from main import logger
 from qiniu import Auth, put_file, BucketManager, etag
+import boto3
 
 class Uploader(object):
   def __init__(self):
@@ -48,3 +49,16 @@ class QiniuUploader(Uploader):
     bucket = BucketManager(q)
     ret, info = bucket.delete_after_days(bucket_name, key, str(expire_days))
 
+class S3Uploader(Uploader):
+  def __init__(self, config):
+    self.access_key = config.access_key
+    self.secret_key = config.secret_key
+    self.bucket_name = config.bucket_name
+
+  def upload(self, key, file):
+    client = boto3.client(
+                's3',
+                aws_access_key_id=self.access_key,
+                aws_secret_access_key=self.secret_key,
+            )
+    client.upload_file(file,self.bucket_name,key)

@@ -32,6 +32,7 @@ class S3Config(object):
     self.access_key = config["access_key"]
     self.secret_key = config["secret_key"]
     self.bucket_name = config["bucket_name"]
+    self.is_s3 = config.get("is_s3")
 
 class SQLConfig(object):
   """
@@ -68,4 +69,24 @@ class RedisConfig(object):
     self.suffix = config["suffix"]
     self.expired = config["expired"]
 
+class MongoConfig(object):
+  """
+  Config for mongo dump
+  """
+  def __init__(self, config):
+    self.host = config["host"]
+    self.database = config["database"]
+    self.username = config["username"]
+    self.password = config["password"]
 
+    # back up interval: Every n minutes
+    self.interval = config["interval"]
+    self.interval_unit = config["interval_unit"]
+
+    # s3 file prefix and suffix
+    self.prefix = config["prefix"]
+    self.suffix = config["suffix"]
+
+    # start date and end date to backup 
+    self.ds_start = config['ds_start']
+    self.ds_end = config['ds_end']

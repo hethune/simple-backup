@@ -35,18 +35,24 @@ class BackupJob(object):
       logger.info("deleted file {}".format(file_path))
 
   @staticmethod
-  def construct_filename(prefix, tags, suffix, base_folder):
+  def construct_filename(prefix, tags, suffix, base_folder,dt=None):
     """
     tags: @list
+    dt: datetime object
     return: prefix-tags-tags-tags-yyyymmdd-epoch.suffix
     """
     now = datetime.datetime.utcnow()
+    if not dt:
+      year, month, day = now.year,now.month,now.day
+    else:
+      year, month, day = dt.year,dt.month,dt.day
+
     epoch = int(now.strftime('%s'))
     # prefix-database-yyyymmdd-epoch
     tmp_file_name = "{}-{}-{}-{}.{}".format(
         prefix, 
         "-".join(tags),
-        "{}{}{}".format(now.year,now.month,now.day),
+        "{}{}{}".format(year,month,day),
         epoch,
         suffix
       )
@@ -55,7 +61,18 @@ class BackupJob(object):
 
     return tmp_file_name, tmp_file_name_with_path
 
+  @staticmethod
+  def construct_dt(dateiso):
+    # date iso string like 2018-01-01
+    return datetime.datetime(int(dateiso.split("-")[0]),
+                            int(dateiso.split("-")[1]),
+                            int(dateiso.split("-")[2])
+                            )
 
+  @staticmethod
+  def date_range(start_date, end_date):
+    for ordinal in range(start_date.toordinal(), end_date.toordinal()):
+        yield datetime.date.fromordinal(ordinal)
 
 class Heartbeat(BackupJob):
   """
@@ -161,6 +178,76 @@ class RedisBackupJob(BackupJob):
       )
       if not self.base_config.dry_run:
         self.uploader.upload(tmp_file_name, tmp_file_name_with_path, self.redis_config.expired)
+
+    except (RuntimeError, AssertionError) as  e:
+      # log
+      logger.error(e)
+    finally:
+      # delete 
+      BackupJob.safe_delete(tmp_file_name_with_path)
+
+class MongoBackupJob(BackupJob):
+  """
+  Back up a mongo database
+  """
+
+  def __init__(self, base_config, mongo_config, uploader):
+    self.base_config = base_config
+    self.mongo_config = mongo_config
+    self.uploader = uploader
+
+  def run(self):
+    if self.mongo_config.ds_start and self.mongo_config.ds_end:
+      for ds in self.date_range(start_date=self.mongo_config.ds_start, 
+                                end_date=self.mongo_config.ds_end):
+        self._run(ds.isoformat())
+    else:
+      self._run(ds=datetime.date.today().isoformat())
+
+  @with_logging
+  def _run(self,ds):
+    tmp_file_name, tmp_file_name_with_path = BackupJob.construct_filename(
+        self.mongo_config.prefix,
+        # need an array
+        [self.mongo_config.database],
+        self.mongo_config.suffix,
+        self.base_config.tmp_folder,
+        self.construct_dt(ds)
+      )
+
+    try:
+      # dump mongo collection to file
+      # mongodump --username xxx --password xxx --host xxx --db xxx --collection xx --out xxx
+      mongo_dump_command = "mongodump --host {} --username {} --password {} --db {} -c Airbnb-{}".format(
+          self.mongo_config.host, 
+          self.mongo_config.username,
+          self.mongo_config.password,
+          self.mongo_config.database,
+          "{}-{}-{}".format(ds.split('-')[0],ds.split('-')[1],ds.split('-')[2])
+        ) if self.mongo_config.password else "mongodump --host {} --db {} -c Airbnb-{}".format(
+          self.mongo_config.host, 
+          self.mongo_config.database,
+           "{}-{}-{}".format(ds.split('-')[0],ds.split('-')[1],ds.split('-')[2])
+        )
+
+      command = "{} --out - | gzip --best | openssl des -salt -k {} > {}".format(
+        mongo_dump_command,
+        self.base_config.passphrase,
+        tmp_file_name_with_path
+      )
+
+      logger.debug("running {}".format(command))
+      c = delegator.run(command)
+
+
+      logger.warning("dumped back up file {}".format(tmp_file_name))
+
+      if c.return_code != 0:
+        raise RuntimeError(c.std_err)
+
+      # upload if not dry_run
+      if not self.base_config.dry_run:
+        self.uploader.upload(tmp_file_name, tmp_file_name_with_path)
 
     except (RuntimeError, AssertionError) as  e:
       # log
