@@ -39,3 +39,6 @@ rm -r $DIR/backup/$FILE_NAME
 
 # Send the file to the backup drive or S3
 aws s3 cp $DIR/backup/$ARCHIVE_NAME s3://$S3_BUCKET/$ARCHIVE_NAME
+
+# Remove the file
+rm $DIR/backup/$ARCHIVE_NAME
