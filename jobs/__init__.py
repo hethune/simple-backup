@@ -114,7 +114,7 @@ class SqlBackupJob(BackupJob):
           self.sql_config.username,
           self.sql_config.password,
           self.sql_config.database
-        ) if self.sql_config.password else "mysqldump -h {} -u {}".format(
+        ) if self.sql_config.password else "mysqldump -h {} -u {} {}".format(
           self.sql_config.host, 
           self.sql_config.username,
           self.sql_config.database
@@ -167,18 +167,28 @@ class RedisBackupJob(BackupJob):
         self.base_config.tmp_folder
       )
 
+    rdb_tmp_file_name, rdb_tmp_file_name_with_path = BackupJob.construct_filename(
+        self.redis_config.prefix,
+        # need an array
+        ["redis", "rdbdump"],
+        "rdb",
+        self.base_config.tmp_folder
+      )
+
     try:
-      command = "cp {} {}".format(self.redis_config.rdb_path, tmp_file_name_with_path)
+      command = "cp {} {}".format(self.redis_config.rdb_path, rdb_tmp_file_name_with_path)
       logger.debug("running {}".format(command))
       c = delegator.run(command)
       if c.return_code != 0:
         raise RuntimeError(c.std_err)
 
-      command = "gzip --best {} | openssl des -salt -k {} > {}".format(
-        tmp_file_name_with_path,
+      command = "gzip -9c {} | openssl des -salt -k {} > {}".format(
+        rdb_tmp_file_name_with_path,
         self.base_config.passphrase,
         tmp_file_name_with_path
       )
+      logger.debug("running {}".format(command))
+      c = delegator.run(command)
       if not self.base_config.dry_run:
         self.uploader.upload(tmp_file_name, tmp_file_name_with_path, self.redis_config.expired)
 
@@ -188,6 +198,7 @@ class RedisBackupJob(BackupJob):
     finally:
       # delete 
       if self.base_config.delete_tmp_file:
+        BackupJob.safe_delete(rdb_tmp_file_name_with_path)
         BackupJob.safe_delete(tmp_file_name_with_path)
       else:
         logger.warning("tmp file deletion is off!")
