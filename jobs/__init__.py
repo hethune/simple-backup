@@ -143,7 +143,10 @@ class SqlBackupJob(BackupJob):
       logger.error(e)
     finally:
       # delete 
-      BackupJob.safe_delete(tmp_file_name_with_path)
+      if self.base_config.delete_tmp_file:
+        BackupJob.safe_delete(tmp_file_name_with_path)
+      else:
+        logger.warning("tmp file deletion is off!")
 
 class RedisBackupJob(BackupJob):
   """
@@ -184,7 +187,10 @@ class RedisBackupJob(BackupJob):
       logger.error(e)
     finally:
       # delete 
-      BackupJob.safe_delete(tmp_file_name_with_path)
+      if self.base_config.delete_tmp_file:
+        BackupJob.safe_delete(tmp_file_name_with_path)
+      else:
+        logger.warning("tmp file deletion is off!")
 
 class MongoBackupJob(BackupJob):
   """
@@ -254,4 +260,7 @@ class MongoBackupJob(BackupJob):
       logger.error(e)
     finally:
       # delete 
-      BackupJob.safe_delete(tmp_file_name_with_path)
+      if self.base_config.delete_tmp_file:
+        BackupJob.safe_delete(tmp_file_name_with_path)
+      else:
+        logger.warning("tmp file deletion is off!")

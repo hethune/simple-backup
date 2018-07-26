@@ -18,6 +18,7 @@ import time
 
 import schedule
 
+from main import logger
 from jobs import Heartbeat, SqlBackupJob, RedisBackupJob, MongoBackupJob
 from config import BaseConfig, S3Config, SQLConfig, RedisConfig, MongoConfig
 from uploader import QiniuUploader, S3Uploader
@@ -31,7 +32,7 @@ def parse_config(config):
   mongo_config =[ MongoConfig(x) for x in config['mongo_config']] if "mongo_config" in config else None
   return base_config, sql_config, redis_config, qiniu_config, mongo_config
 
-def run(config):
+def run(config, immediate=False):
   jobs = []
   # heartbeat job
   heartbeat = Heartbeat(1)
@@ -68,12 +69,22 @@ def run(config):
     interval_unit = job['interval_unit']
     assert interval > 0
     assert interval_unit in ['second', 'minute', 'hour']
-    if interval_unit == 'second':
-      schedule.every(interval).seconds.do(job['job'].run)
-    elif interval_unit == 'minute':
-      schedule.every(interval).minutes.do(job['job'].run)
-    elif interval_unit == 'hour':
-      schedule.every(interval).hours.do(job['job'].run)
+    # One-off; run immediately for every job
+    if immediate:
+      logger.info("Running {} jobs immediately".format(len(jobs)))
+      for job in jobs:
+        job["job"].run()
+        time.sleep(1)
+      logger.info("Finished all jobs")
+      return
+    else:
+      if interval_unit == 'second':
+        schedule.every(interval).seconds.do(job['job'].run)
+      elif interval_unit == 'minute':
+        schedule.every(interval).minutes.do(job['job'].run)
+      elif interval_unit == 'hour':
+        schedule.every(interval).hours.do(job['job'].run)
+      logger.info("Scheduled all jobs!!!")
 
   while 1:
     schedule.run_pending()
