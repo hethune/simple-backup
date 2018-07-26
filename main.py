@@ -45,8 +45,8 @@ logger.setLevel(log_level)
 
 keep_fds = [handler.stream.fileno()]
 
-def action():
-  run(config)
+def action(immediate=False):
+  run(config, immediate)
 
 from daemonize import Daemonize
 pid = "/tmp/simple_backup.pid"
@@ -56,10 +56,13 @@ if __name__ == "__main__":
   from run import run
   parser = argparse.ArgumentParser(description='Simple Backup')
   parser.add_argument('-d', "--daemon", help="Daemon mode", action="store_true")
+  parser.add_argument('-i', "--immediate", help="Immediately run once", action="store_true")
   args = parser.parse_args()
   logger.info("############### starting simple backup services #######################")
   if args.daemon:
     daemon.start()
+  if args.immediate:
+    action(immediate=True)
   else:
     action()
   

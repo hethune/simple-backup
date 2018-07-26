@@ -19,6 +19,8 @@ class BaseConfig(object):
   """
   def __init__(self, config):
     self.dry_run = config.get("dry_run") or False
+    # default to True
+    self.delete_tmp_file = config.get("delete_tmp_file") if config.get("delete_tmp_file") is not None else True
     self.tmp_folder = config["tmp_folder"]
     self.passphrase = config["passphrase"]
     self.log_file = config["log_file"]

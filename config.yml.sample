@@ -1,5 +1,6 @@
 base_config:
   dry_run: # whether upload to cloud
+  delete_tmp_file: # debug purpose; whether to delete tmp file; default to true
   tmp_folder: '/tmp' # tmp folder to hold db dump files
   passphrase: 'verysecure' # passphrase to encrypt dumped files
   log_file: 'backup.log' 

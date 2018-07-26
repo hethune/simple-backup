@@ -12,10 +12,14 @@ Backup local sql db or redis dump to amazon s3, qiniu or aliyun
 ```
 python main.py
 ```
-or in run as `daemon`
+or run as `daemon`
 ```
 python main.py -d
 ```
+or run as a one-off (no scheduling)
+```
+python main.py -i
+``` 
 
 ## Configure
 copy `config.yml.sample` to `config.yml`
