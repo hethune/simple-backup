@@ -234,22 +234,19 @@ class MongoBackupJob(BackupJob):
 
     try:
       # dump mongo collection to file
-      # mongodump --username xxx --password xxx --host xxx --db xxx --collection xx --out xxx
-      mongo_dump_command = "mongodump --host {} --username {} --password {} --db {} -c Airbnb-{}".format(
+      # mongodump --username xxx --password xxx --host xxx --db xxx  --out xxx
+      mongo_dump_command = "mongodump --host {} --username {} --password {} --db {} ".format(
           self.mongo_config.host, 
           self.mongo_config.username,
           self.mongo_config.password,
           self.mongo_config.database,
-          "{}-{}-{}".format(ds.split('-')[0],ds.split('-')[1],ds.split('-')[2])
-        ) if self.mongo_config.password else "mongodump --host {} --db {} -c Airbnb-{}".format(
+        ) if self.mongo_config.password else "mongodump --host {} --db {}".format(
           self.mongo_config.host, 
-          self.mongo_config.database,
-           "{}-{}-{}".format(ds.split('-')[0],ds.split('-')[1],ds.split('-')[2])
+          self.mongo_config.database
         )
 
-      command = "{} --out - | gzip --best | openssl des -salt -k {} > {}".format(
+      command = "{} --gzip --archive={}".format(
         mongo_dump_command,
-        self.base_config.passphrase,
         tmp_file_name_with_path
       )
 
